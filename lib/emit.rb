@@ -16,7 +16,6 @@ require "emit/input_guard"
 require "emit/output_guard"
 
 require "emit/alternation"
-require "emit/choice"
 
 module Emit
   class << self
@@ -52,8 +51,8 @@ module Emit
       channel_ends.each(&:retire)
     end
 
-    def select(*guards)
-      Alternation.new(guards.map(&:guard_action)).execute
+    def choice(*guards)
+      Alternation.new(guards).execute
     end
 
     def method_missing(name, *args, **kwargs)

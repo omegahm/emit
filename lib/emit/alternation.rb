@@ -1,30 +1,19 @@
 module Emit
   class Alternation
     def initialize(guards)
-      @guards = guards
+      @guards = guards.map { |guard| InputGuard.new(guard) }
     end
 
     def execute
       idx, request, channel, operation = choose
 
       if @guards[idx]
-        action = @guards[idx].last[:action]
+        action = @guards[idx].action
+        fail "Failed executing action in alternation." unless [Proc, Method].include?(action.class)
 
-        case action
-        when Choice
-          case operation
-          when :write then action.invoke_on_output
-          when :read  then action.invoke_on_input(request.message)
-          end
-        when Proc, Method
-          case operation
-          when :write then action.()
-          when :read  then action.(message: request.message)
-          end
-        when nil
-          # no-op
-        else
-          fail "Failed executing action: #{action}."
+        case operation
+        when :write then action.()
+        when :read  then action.(request.message)
         end
       end
 
@@ -36,29 +25,25 @@ module Emit
     def choose
       requests  = {}
       act       = nil
-      poison    = false
-      retire    = false
 
       Scheduler.current.state = :active
 
       begin
         idx = 0
         @guards.each do |guard|
-          if guard.size == 3 # write
+          if OutputGuard === guard
             operation = :write
-            channel, message, action = guard
-            request = ChannelRequest.new(Scheduler.current, message)
-            channel.send(:post_write, request)
-          elsif guard.size == 2 # read
+            request = ChannelRequest.new(Scheduler.current, guard.message)
+            guard.channel_end.send(:post_write, request)
+          elsif InputGuard === guard
             operation = :read
-            channel, action = guard
             request = ChannelRequest.new(Scheduler.current)
-            channel.send(:post_read, request)
+            guard.channel_end.send(:post_read, request)
           else
             fail "Guard was neither write or read."
           end
 
-          requests[request] = [idx, channel, operation]
+          requests[request] = [idx, guard.channel_end, operation]
           idx += 1
         end
       rescue ChannelPoisonedException, ChannelRetiredException
