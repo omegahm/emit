@@ -19,7 +19,7 @@ require "emit/alternation"
 
 module Emit
   class << self
-    def parallel(*processes)
+    def parallel(*processes, run: true)
       processes.flatten!
 
       processes.each do |process|
@@ -27,8 +27,10 @@ module Emit
         Scheduler.enqueue(process)
       end
 
-      Scheduler.join(processes)
-      processes.map(&:return_value)
+      if run
+        Scheduler.join(processes)
+        processes.map(&:return_value)
+      end
     end
 
     def sequence(*processes)
