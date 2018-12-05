@@ -52,13 +52,11 @@ module Emit
     end
 
     def get_next
-      if !@new_queue.empty?
+      if !@new_queue.empty? || @next_queue.empty?
         @fiber
-      elsif !@next_queue.empty?
+      else
         @current = @next_queue.shift
         @current
-      else
-        @fiber
       end
     end
 

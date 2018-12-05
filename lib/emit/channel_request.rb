@@ -11,13 +11,13 @@ module Emit
     def poison
       return if success?
       @result = :poison
-      @process.notify(:poison)
+      @process.poison
     end
 
     def retire
       return if success?
       @result = :retire
-      @process.notify(:retire)
+      @process.retire
     end
 
     def offer(recipient)
@@ -27,8 +27,8 @@ module Emit
       @result = :success
       recipient.result = :success
 
-      @process.notify(:done)
-      recipient.process.notify(:done)
+      @process.finish
+      recipient.process.finish
 
       true
     end

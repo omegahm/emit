@@ -22,9 +22,16 @@ module Emit
       Scheduler.get_next.transfer while active?
     end
 
-    def notify(new_state)
-      @state = new_state
-      Scheduler.activate(self) unless Scheduler.current == self
+    def retire
+      notify(:retire)
+    end
+
+    def poison
+      notify(:poison)
+    end
+
+    def finish
+      notify(:done)
     end
 
     def start
@@ -41,7 +48,7 @@ module Emit
       begin
         if @block.arity.negative?
           @return_value = @block.call(*@args, **@kwargs)
-        elsif @block.arity > 0
+        elsif @block.arity.positive?
           @return_value = @block.call(*@args)
         else
           @return_value = @block.call
@@ -71,16 +78,21 @@ module Emit
 
     private
 
+    def notify(new_state)
+      @state = new_state
+      Scheduler.activate(self) unless Scheduler.current == self
+    end
+
     def propagate_poison
-      @args.each do |arg|
-        arg.poison if arg.methods.include?(:poison)
-      end
+      propagate(:poison)
     end
 
     def propagate_retire
-      @args.each do |arg|
-        arg.retire if arg.methods.include?(:retire)
-      end
+      propagate(:retire)
+    end
+
+    def propagate(sym)
+      @args.each { |arg| arg.public_send(sym) if arg.respond_to?(sym) }
     end
   end
 end

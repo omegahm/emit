@@ -7,6 +7,7 @@ module Emit
       @channel.read
     end
     alias :read :call
+    alias :>> :call
 
     def retire
       return if @retired

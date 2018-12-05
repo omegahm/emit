@@ -103,13 +103,13 @@ module Emit
     def post_read(request)
       check_termination!
       @read_queue << request
-      match
+      match!
     end
 
     def post_write(request)
       check_termination!
       @write_queue << request
-      match
+      match!
     end
 
     def remove_read(request)
@@ -154,14 +154,12 @@ module Emit
       end
     end
 
-    def match
+    def match!
       @write_queue.shuffle.each do |writer|
         @read_queue.shuffle.each do |reader|
-          return true if writer.offer(reader)
+          return if writer.offer(reader)
         end
       end
-
-      false
     end
   end
 end

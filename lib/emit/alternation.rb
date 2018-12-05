@@ -3,8 +3,7 @@ module Emit
     def initialize(guards)
       @guards = guards.map do |guard|
         case guard
-        when InputGuard  then guard
-        when OutputGuard then guard
+        when InputGuard, OutputGuard then guard
         else
           InputGuard.new(guard)
         end
