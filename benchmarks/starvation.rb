@@ -4,16 +4,14 @@ c = Emit.channel
 d = Emit.channel
 
 def p(cout, cin)
-  puts "START"
   cout << 1
-  puts "WRITE"
+  cout << 1
   cin.()
-  puts "DONE"
 end
 
 def q(cout, cin)
-  cout << 1
   cin.()
+  cout << 1
 end
 
 Emit.parallel(

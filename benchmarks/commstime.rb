@@ -40,7 +40,7 @@ def consumer(cin, n)
 end
 
 n = 3
-comms = 500
+comms = 125_000
 n.times do |i|
   puts "Running with #{4*comms} communications"
   puts
