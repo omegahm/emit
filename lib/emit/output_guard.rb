@@ -2,7 +2,7 @@ module Emit
   class OutputGuard
     attr_reader :channel_end, :message, :action
 
-    def initialize(channel_end, message, action=nil)
+    def initialize(argument, message, action=nil)
       case argument
       when OutputGuard
         @channel_end, @message, @action = argument.channel_end, argument.message, argument.action

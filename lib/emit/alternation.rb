@@ -1,7 +1,14 @@
 module Emit
   class Alternation
     def initialize(guards)
-      @guards = guards.map { |guard| InputGuard.new(guard) }
+      @guards = guards.map do |guard|
+        case guard
+        when InputGuard  then guard
+        when OutputGuard then guard
+        else
+          InputGuard.new(guard)
+        end
+      end
     end
 
     def execute
